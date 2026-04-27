@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>商品管理系统</title>
+    <!-- 引入 Bootstrap CSS（CDN，不用下载） -->
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <!-- 引入 Axios（用来发请求，不用写复杂的AJAX） -->
+    <script src="https://cdn.bootcdn.net/ajax/libs/axios/1.4.0/axios.min.js"></script>
+</head>
+<body class="bg-light">
+
+<!-- 顶部导航栏 -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+    <div class="container">
+        <a class="navbar-brand" href="#">电商商品管理系统</a>
+    </div>
+</nav>
+
+<div class="container">
+    <!-- 操作按钮区 -->
+    <div class="row mb-3">
+        <div class="col">
+            <button class="btn btn-success" onclick="openAddModal()">
+                <i class="bi bi-plus-lg"></i> 新增商品
+            </button>
+            <button class="btn btn-secondary" onclick="loadProductList()">
+                刷新列表
+            </button>
+        </div>
+    </div>
+
+    <!-- 商品表格 -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-white">
+            <h5 class="mb-0">商品列表</h5>
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-hover table-striped mb-0">
+                <thead class="table-light">
+                <tr>
+                    <th>ID</th>
+                    <th>商品名称</th>
+                    <th>价格</th>
+                    <th>库存</th>
+                    <th>操作</th>
+                </tr>
+                </thead>
+                <tbody id="productTableBody">
+                <!-- JS会自动把数据填充到这里 -->
+                <tr>
+                    <td colspan="5" class="text-center text-muted">加载中...</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- 新增商品弹窗（Modal） -->
+<div class="modal fade" id="addProductModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">新增商品</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addProductForm">
+                    <div class="mb-3">
+                        <label class="form-label">商品名称</label>
+                        <input type="text" class="form-control" id="productName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">价格</label>
+                        <input type="number" class="form-control" id="price" step="0.01" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">库存</label>
+                        <input type="number" class="form-control" id="stock" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" onclick="submitAddProduct()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 引入 Bootstrap JS（弹窗等交互功能需要） -->
+<script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+
+<!-- 我们自己的业务逻辑 JS -->
+<script>
+    // 定义后端接口地址（和你之前测试的一致）
+    const API_BASE = 'http://localhost:9090';
+
+    // 1. 页面加载完成后，自动获取商品列表
+    window.onload = function() {
+        loadProductList();
+    };
+
+    // 2. 加载商品列表
+    async function loadProductList() {
+        try {
+            // 调用后端接口：GET /product/list?page=1
+            const response = await axios.get(API_BASE + '/product/list', {
+                params: { page: 1, size: 10 }
+            });
+
+            // 拿到返回的数据
+            const productList = response.data.data;
+            const tbody = document.getElementById('productTableBody');
+
+            // 清空表格，重新渲染
+            tbody.innerHTML = '';
+
+            if (productList.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">暂无数据</td></tr>';
+                return;
+            }
+
+            // 循环把数据塞进表格
+            productList.forEach(product => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${product.id}</td>
+                    <td>${product.productName}</td>
+                    <td>¥${product.price}</td>
+                    <td>${product.stock}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary" onclick="getProductDetail(${product.id})">查看</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+        } catch (error) {
+            alert('加载列表失败：' + (error.response?.data?.msg || error.message));
+        }
+    }
+
+    // 3. 打开新增弹窗
+    let addModal;
+    function openAddModal() {
+        if (!addModal) {
+            addModal = new bootstrap.Modal(document.getElementById('addProductModal'));
+        }
+        // 清空表单
+        document.getElementById('addProductForm').reset();
+        addModal.show();
+    }
+
+    // 4. 提交新增商品
+    async function submitAddProduct() {
+        // 获取表单数据
+        const productData = {
+            productName: document.getElementById('productName').value,
+            price: parseFloat(document.getElementById('price').value),
+            stock: parseInt(document.getElementById('stock').value)
+        };
+
+        try {
+            // 调用后端接口：POST /product
+            await axios.post(API_BASE + '/product', productData);
+            alert('新增成功！');
+            // 关闭弹窗
+            addModal.hide();
+            // 刷新列表
+            loadProductList();
+        } catch (error) {
+            alert('新增失败：' + (error.response?.data?.msg || error.message));
+        }
+    }
+
+    // 5. 查看商品详情
+    async function getProductDetail(id) {
+        try {
+            const response = await axios.get(API_BASE + '/product/' + id);
+            const product = response.data.data;
+            alert(`商品详情：\nID: ${product.id}\n名称: ${product.productName}\n价格: ¥${product.price}\n库存: ${product.stock}`);
+        } catch (error) {
+            alert('查询失败：' + (error.response?.data?.msg || error.message));
+        }
+    }
+</script>
+
+</body>
+</html>
