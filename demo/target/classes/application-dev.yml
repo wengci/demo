@@ -2,21 +2,41 @@
 server:
   port: 8080  # 本地端口8080
 
-# 开启DEBUG日志（方便调试）
+# ==================== 必须配置：数据库连接 ====================
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    # 👇 请把下面的 demo_db 改成你真实的数据库名（如果没有，先去 pgAdmin 创建一个）
+    url: jdbc:postgresql://localhost:5432/demo_db
+    # 👇 请改成你的数据库账号（通常是 postgres）
+    username: postgres
+    # 👇 请改成你安装 PostgreSQL 时设置的密码
+    password: Lij992468@
+
+# ==================== 必须配置：MyBatis-Plus ====================
+mybatis-plus:
+  mapper-locations: classpath:mapper/*.xml
+  # 👇 注意：改成你真实的实体类包名
+  type-aliases-package: com.software.springbootdemo.entity
+  configuration:
+    map-underscore-to-camel-case: true # 下划线自动转驼峰（product_name -> productName）
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl # 控制台打印 SQL（方便调试）
+
+# ==================== 日志配置 ====================
 logging:
   level:
-    root: DEBUG
-    com.example.demo: DEBUG
+    root: INFO
+    # 👇 注意：改成你真实的项目包名
+    com.software.springbootdemo: DEBUG
+
+# ==================== 你的原有配置 ====================
 app:
-  # 基础信息
   name: 电商演示平台
   version: 1.0.0
   desc: ${app.name}-${app.version}
-  # 作者信息
   author:
     name: 张三
     email: zhangsan@example.com
-  # 功能列表
   features:
     - 用户管理
     - 商品展示
