@@ -1,8 +1,5 @@
 package com.example.demo.entity;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import java.math.BigDecimal;
 
@@ -12,5 +9,5 @@ public class Product {
     private String productName;
     private BigDecimal price;
     private Integer stock;
-    private String imgUrl; // 商品图片地址
+    private String imgUrl; // 商品图片地址（对接文件上传）
 }

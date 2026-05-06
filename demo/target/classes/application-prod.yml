@@ -1,0 +1,9 @@
+# 生产环境：安全+性能优先
+server:
+  port: 80  # 线上默认80端口
+
+# 关闭调试，只打印关键日志
+logging:
+  level:
+    root: INFO
+    com.example.demo: INFO

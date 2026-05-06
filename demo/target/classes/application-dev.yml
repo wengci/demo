@@ -1,0 +1,23 @@
+# 开发环境：本地调试专用
+server:
+  port: 8080  # 本地端口8080
+
+# 开启DEBUG日志（方便调试）
+logging:
+  level:
+    root: DEBUG
+    com.example.demo: DEBUG
+app:
+  # 基础信息
+  name: 电商演示平台
+  version: 1.0.0
+  desc: ${app.name}-${app.version}
+  # 作者信息
+  author:
+    name: 张三
+    email: zhangsan@example.com
+  # 功能列表
+  features:
+    - 用户管理
+    - 商品展示
+    - 订单支付
